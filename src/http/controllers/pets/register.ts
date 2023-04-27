@@ -1,3 +1,5 @@
+import { PrismaPetsRepository } from '@/http/repositories/prisma/prisma-pets-repository'
+import { RegisterUseCase } from '@/http/use-cases/register'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
@@ -16,18 +18,27 @@ export async function RegisterPets(
     adoptionsRequirements: z.array(z.string()),
   })
 
-  //   const {
-  //     name,
-  //     description,
-  //     age,
-  //     size,
-  //     energyLevel,
-  //     independenceLevel,
-  //     environment,
-  //     adoptionsRequirements,
-  //   } = registerPetsBodySchema.parse(request.body)
+  const {
+    name,
+    description,
+    age,
+    size,
+    energyLevel,
+    independenceLevel,
+    environmentSize,
+  } = registerPetsBodySchema.parse(request.body)
 
-  const body = registerPetsBodySchema.parse(request.body)
+  const petsRepository = new PrismaPetsRepository()
+  const registerUseCase = new RegisterUseCase(petsRepository)
+  const pet = await registerUseCase.execute({
+    name,
+    description,
+    age,
+    size,
+    energyLevel,
+    independenceLevel,
+    environmentSize,
+  })
 
-  return reply.status(201).send({ pets: body })
+  return reply.status(201).send({ pets: pet })
 }
